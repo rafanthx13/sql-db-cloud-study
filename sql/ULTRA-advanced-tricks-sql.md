@@ -44,3 +44,5 @@ https://www.reddit.com/r/dataengineering/comments/rva6nc/how_did_you_become_a_sq
 https://medium.com/analytics-and-data/the-path-to-learning-sql-and-mastering-it-to-become-a-data-engineer-256ea0fef4e7
 
 https://levelup.gitconnected.com/advanced-sql-for-data-professionals-e0ef0740e8e1
+
+https://www.datacamp.com/community/tutorials/sql-tutorial-query?tap_a=5644-dce66f&tap_s=638387-3d2eb6
