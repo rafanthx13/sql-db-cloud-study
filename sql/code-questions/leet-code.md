@@ -349,6 +349,37 @@ group by 1
 order by 1;
 ```
 
+#### [197. Rising Temperature](https://leetcode.com/problems/rising-temperature/)
+
+Você quer comparar uma data com a anterior. Ao invez de fazer winbdows function ou algo do tipo, você faz o join com a row que tenha uma date_diff de 1
+
+```
+select 
+    w.id as Id
+from 
+    Weather w inner join Weather t
+    on date_sub(w.recordDate, interval 1 day) = t.recordDate
+where 
+    w.temperature > t.temperature
+```
+
+
+
+#### [607. Sales Person](https://leetcode.com/problems/sales-person/)
+
+```
+SELECT name
+FROM salesPerson
+WHERE  sales_id NOT IN
+    (
+        SELECT o.sales_id
+        FROM orders o 
+        LEFT JOIN company c
+        ON o.com_id = c.com_id    
+        WHERE c.name = 'RED'
+    )
+```
+
 
 
 ## Hard Questions
