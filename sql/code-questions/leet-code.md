@@ -335,6 +335,324 @@ GROUP BY class
 HAVING COUNT(*) >= 5
 ```
 
+## Random Medium
+
+| 1393 | [Capital Gain/Loss](https://leetcode.com/problems/capital-gainloss) |
+| ---- | ------------------------------------------------------------ |
+|      |                                                              |
+
+sozinho; Estrat´gia: Uso uma SubQ para inverter o sinal de quem é Buy, e asim somar positivos e negativos no select de fora
+
+```
+select
+    op.stock_name,
+    sum(op.price) as capital_gain_loss
+from ( select 
+     stock_name,
+    case 
+        when operation = 'Buy'
+        then price * (-1)
+        else price
+    end price
+from Stocks
+) as op
+group by op.stock_name
+
+
+```
+
+
+
+| 626  | [Exchange Seats](https://leetcode.com/problems/exchange-seats) |
+| ---- | ------------------------------------------------------------ |
+|      |                                                              |
+
+```
+# eh possivel fazer com +1 e -1 porque começa com id numero de 1 a n
+SELECT
+	CASE
+        # quando for o ultimo caso
+		WHEN seat.id % 2 <> 0 AND seat.id = (SELECT COUNT(*) FROM seat) 
+            THEN seat.id
+        # quando tiver numero par -1
+		WHEN seat.id % 2 = 0 
+            THEN seat.id - 1
+        # quando id impar + 1
+		ELSE
+			seat.id + 1
+	END as id,
+	student 
+FROM seat
+ORDER BY id
+;
+```
+
+
+
+| 1158 | [Market Analysis I](https://leetcode.com/problems/market-analysis-i) |
+| ---- | ------------------------------------------------------------ |
+|      |                                                              |
+
+**``IFNULL``**
+
+
+
+```
+SELECT 
+    u.user_id AS buyer_id, 
+    join_date, 
+    IFNULL(COUNT(order_date), 0) AS orders_in_2019 
+FROM Users as u LEFT JOIN Orders as o
+    ON u.user_id = o.buyer_id
+        AND YEAR(order_date) = '2019'
+GROUP BY
+    u.user_id
+
+```
+
+
+
+
+
+| 178  | [Rank Scores](https://leetcode.com/problems/rank-scores) |
+| ---- | -------------------------------------------------------- |
+|      |                                                          |
+
++ Usa-se ` pois Rank é uma keyword do mysql
++ Strategy: Voce faz uma 2 coluna que é a contagem de valores >= aquele valor sem repetir o valor nessa condicional. Assim a 1 linha é o maior valor e vai conferir quantos valores sao iguais ou maior que ele. Como é o maior, é apenas ele mesmo, entoa é 1. O 2 valor será ele mais o anteriro sendo assim 2, e assim por diante
++ Percebe que a 2 coluna tem como ref o select de fora por `s.Score`
+
+```
+SELECT
+  Score,
+  (SELECT count(distinct Score) FROM Scores WHERE Score >= s.Score) `Rank`
+FROM Scores s
+ORDER BY Score desc
+
+```
+
+| 184  | [Department Highest Salary](https://leetcode.com/problems/department-highest-salary) |
+| ---- | ------------------------------------------------------------ |
+|      |                                                              |
+
+```
+# O grande problema dessa questao eh que
+# ele quer que mostre o max(salary) repetido
+# se o max de um departamenteo eh 900, deve mostrar todo 9000
+# SOLUCAO: Check se o valor eh o max daquele departamnteo
+#        Usando uma subquery. Tem que ser 2 select, pois
+#       na subqueri precisamos do departamento que sera dinamico
+# em suma: faz uma sub
+
+
+Select 
+    Department.Name, 
+    emp1.Name, 
+    emp1.Salary 
+from 
+    Employee emp1 join Department 
+    on emp1.DepartmentId = Department.Id
+where 
+    emp1.Salary = (
+        Select Max(Salary) 
+        from Employee emp2 
+        where emp2.DepartmentId = emp1.DepartmentId
+    )
+;
+```
+
+MInha soluçâo:
+
+Ao invez de fazer um select para cada um, criar uma tabela temporaria com sub-query com o max de cada departamtento, asism, mostra os funconarios cja coluna de slario seja igual ao max-salary.
+
+FIZ SOZINHO
+
+```
+SELECT
+    d.name as Department,
+    e.name as Employee,
+    e.salary as Salary
+FROM Employee e
+    INNER JOIN Department d
+    ON e.departmentId = d.id
+    INNER JOIN (
+        SELECT 
+            d1.name,
+            max(salary) as max_salary
+        FROM Employee e1
+            INNER JOIN Department d1
+            ON e1.departmentId = d1.id
+        GROUP BY 
+            d1.name
+        ) temp
+    ON d.name = temp.name
+WHERE
+    e.salary = temp.max_salary 
+```
+
+com windows funcion
+
+```
+SELECT
+    name as Department,
+    employee,
+    salary
+FROM
+(
+SELECT
+    departmentID,
+    name as employee,
+    salary,
+    dense_rank() OVER(Partition by departmentID order by salary desc) as rank_no
+    FROM
+    Employee
+    )e
+LEFT JOIN
+    DEPARTMENT d
+on d.id=e.departmentID
+where rank_no=1;
+```
+
+
+
+
+
+| 180  | [Consecutive Numbers](https://leetcode.com/problems/consecutive-numbers) |
+| ---- | ------------------------------------------------------------ |
+|      |                                                              |
+
+```
+SELECT DISTINCT
+    l1.Num AS ConsecutiveNums
+FROM
+    Logs l1,
+    Logs l2,
+    Logs l3
+WHERE
+    l1.Id = l2.Id - 1
+    AND l2.Id = l3.Id - 1
+    AND l1.Num = l2.Num
+    AND l2.Num = l3.Num
+;
+
+```
+
+
+
+| 177  | [Nth Highest Salary](https://leetcode.com/problems/nth-highest-salary) |
+| ---- | ------------------------------------------------------------ |
+|      |                                                              |
+
+CRIANDO UMA PROCEDURE
+
+```
+CREATE FUNCTION getNthHighestSalary(N INT) RETURNS INT
+BEGIN
+DECLARE M INT;
+SET M=N-1;
+  RETURN (
+      # Write your MySQL query statement below.
+      SELECT DISTINCT Salary FROM Employee ORDER BY Salary DESC LIMIT M, 1
+  );
+END
+
+```
+
+
+
+
+
+## Random Hard
+
+| 601  | [Human Traffic of Stadium](https://leetcode.com/problems/human-traffic-of-stadium) |
+| ---- | ------------------------------------------------------------ |
+|      |                                                              |
+
+
+
+**Idea**
+
+I've seen pretty many solutions using `join` of three tables or creating temporary tables with `n^3` rows. With my 5-years' working experience on data analysis, I can guarantee you this method will cause you "out of spool space" issue when you deal with a large table in big data field.
+
+
+
+I recommend you to learn and master window functions like `lead`, `lag` and use them as often as you can in your codes. These functions are very fast, and whenever you find yourself creating duplicate temp tables, you should ask yourself: can I solve this with window functions.
+
+**MySQL**
+
+```
+SELECT ID
+    , visit_date
+    , people
+FROM (
+    SELECT ID
+        , visit_date
+        , people
+        , LEAD(people, 1) OVER (ORDER BY id) nxt
+        , LEAD(people, 2) OVER (ORDER BY id) nxt2
+        , LAG(people, 1) OVER (ORDER BY id) pre
+        , LAG(people, 2) OVER (ORDER BY id) pre2
+    FROM Stadium
+) cte 
+WHERE (cte.people >= 100 AND cte.nxt >= 100 AND cte.nxt2 >= 100) 
+    OR (cte.people >= 100 AND cte.nxt >= 100 AND cte.pre >= 100)  
+    OR (cte.people >= 100 AND cte.pre >= 100 AND cte.pre2 >= 100) 
+```
+
+
+
+
+
+| 185  | [Department Top Three Salaries](https://leetcode.com/problems/department-top-three-salaries) |
+| ---- | ------------------------------------------------------------ |
+|      |                                                              |
+
+```
+# Write an SQL query to find the employees who are high earners 
+#   (A high earner in a department is an employee who has a salary in the top three unique salaries for that department)
+# in each of the departments.
+
+# ou seja que o top 3 dae cada departamento
+
+SELECT 
+    D.Name as Department, 
+    E.Name as Employee, 
+    E.Salary 
+FROM 
+    Department D, Employee E, Employee E2  
+WHERE 
+    D.ID = E.DepartmentId 
+    and E.DepartmentId = E2.DepartmentId 
+    and E.Salary <= E2.Salary
+group by 
+    D.ID, E.Name 
+having 
+    # vai pegar quem te tem somente ate 3 com slary maior ou igua a ele
+    count(distinct E2.Salary) <= 3
+order by 
+    D.Name, E.Salary desc
+```
+
+| 262  | [Trips and Users](https://leetcode.com/problems/trips-and-users) |
+| ---- | ------------------------------------------------------------ |
+|      |                                                              |
+
+
+
+```
+SELECT 
+    Request_at AS Day, 
+    ROUND(SUM(IF(Status = 'completed', 0, 1))/COUNT(Status),2) as 'Cancellation Rate' 
+FROM 
+    Trips 
+WHERE 
+    Client_Id NOT IN (SELECT Users_Id FROM Users WHERE Banned = 'Yes') 
+    AND Driver_Id NOT IN (SELECT Users_Id FROM Users WHERE Banned = 'Yes')
+    AND Request_at BETWEEN '2013-10-01' AND '2013-10-03'
+GROUP BY 
+    Trips.Request_at
+```
+
 
 
 ## Rnadom
