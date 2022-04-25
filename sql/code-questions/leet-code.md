@@ -74,6 +74,267 @@ group by 1
 order by 1;
 ```
 
+## Random 2 - Easy Questions
+
+#### [ 1741- Find Total Time Spent by Each Employee](https://leetcode.com/problems/find-total-time-spent-by-each-employee)
+
+Consegui fazer sozinho
+
+```
+select
+    event_day as day,
+    emp_id,
+    sum(out_time - in_time) as total_time
+from Employees
+group by event_day, emp_id
+```
+
+
+
+#### [ 1693 Daily Leads and Partners](https://leetcode.com/problems/daily-leads-and-partners)|
+
+Foiu feito um count em distinct, ou seja, o len(unique); Fiz sozinho
+
+```
+select
+    date_id,
+    make_name,
+    count(distinct lead_id) as unique_leads,
+    count(distinct partner_id) as unique_partners 
+from DailySales 
+group by date_id, make_name 
+
+
+```
+
+
+
+#### [1587 Bank Account Summary II](https://leetcode.com/problems/bank-account-summary-ii) 
+
+sozinho
+
+```
+select
+    name as NAME,
+    sum(amount) as BALANCE
+from Users inner join Transactions USING(account)
+group by account
+having sum(amount) > 10000 
+```
+
+
+
+#### [ 1890 The Latest Login in 2020](https://leetcode.com/problems/the-latest-login-in-2020) |        
+
+Quando usa MAX/MIN retorna o menor valor etambem todos os outros dados da linha, volta a maior data e tambem o uiser_id dessa maior data, por isos só dá pra ter um unico max/min                                                   
+
+```
+SELECT
+    user_id,
+    MAX(time_stamp) AS last_stamp
+FROM 
+    Logins
+WHERE 
+    YEAR(time_stamp) = 2020 
+GROUP BY 
+    user_id;
+
+```
+
+
+
+#### [] 1407 | Top Travellers](https://leetcode.com/problems/top-travellers) |
+| ---- | ------------------------------------------------------------ |
+|      |                                                              |
+
+```
+select 
+    u.name, 
+    ifnull(sum(r.distance), 0) as travelled_distance
+# lef join pois pode nao ter distance
+from users u left join rides r
+    on u.id = r.user_id
+group by 
+    r.user_id
+order by 
+    # order by eh a ultima coisa a ser feita,
+    # por isso da pra fazer sobre o attr com alias
+    travelled_distance desc, u.name asc
+
+
+```
+
+| 1179 | [Reformat Department Table](https://leetcode.com/problems/reformat-department-table) |
+| ---- | ------------------------------------------------------------ |
+|      |                                                              |
+
+Caso de Pivot TABLE
+
+**PIVOT TABLE de forma manual no my-sql**
+
+```
+select id, 
+	sum(case when month = 'jan' then revenue else null end) as Jan_Revenue,
+	sum(case when month = 'feb' then revenue else null end) as Feb_Revenue,
+	sum(case when month = 'mar' then revenue else null end) as Mar_Revenue,
+	sum(case when month = 'apr' then revenue else null end) as Apr_Revenue,
+	sum(case when month = 'may' then revenue else null end) as May_Revenue,
+	sum(case when month = 'jun' then revenue else null end) as Jun_Revenue,
+	sum(case when month = 'jul' then revenue else null end) as Jul_Revenue,
+	sum(case when month = 'aug' then revenue else null end) as Aug_Revenue,
+	sum(case when month = 'sep' then revenue else null end) as Sep_Revenue,
+	sum(case when month = 'oct' then revenue else null end) as Oct_Revenue,
+	sum(case when month = 'nov' then revenue else null end) as Nov_Revenue,
+	sum(case when month = 'dec' then revenue else null end) as Dec_Revenue
+from department
+group by id
+order by id
+
+```
+
+#### 
+
+| 586  | [Customer Placing the Largest Number of Orders](https://leetcode.com/problems/customer-placing-the-largest-number-of-orders) |
+| ---- | ------------------------------------------------------------ |
+|      |                                                              |
+
+O ORDER BY PODE SER USADO sobre uma funçâo: vai executar o count no group by e apartir do resultado ordenar quanto ao valor
+
+```
+SELECT customer_number
+FROM orders
+GROUP BY customer_number
+ORDER BY COUNT(order_number) DESC 
+LIMIT 1
+
+```
+
+
+
+#### 
+
+| 620  | [Not Boring Movies](https://leetcode.com/problems/not-boring-movies) |
+| ---- | ------------------------------------------------------------ |
+|      |                                                              |
+
+
+
+```
+SELECT *
+FROM cinema
+WHERE 
+    id % 2 <> 0 # want id impar/odd
+    AND 
+    description NOT LIKE '%boring%' # nao deve ter boring
+ORDER BY 
+    rating DESC;
+
+```
+
+
+
+#####
+
+[1050 - Actors and Directors Who Cooperated At Least Three Times](https://leetcode.com/problems/actors-and-directors-who-cooperated-at-least-three-times)
+
+```
+select
+    actor_id,
+    director_id
+from ActorDirector
+group by actor_id, director_id
+having count(*) > 2
+
+```
+
+##### [ 1729 - Find Followers Count](https://leetcode.com/problems/find-followers-count)
+
+
+
+```
+select
+    user_id,
+    count(*) as followers_count
+from Followers 
+group by
+    user_id 
+order by user_id
+```
+
+
+
+
+
+| 181  | [Employees Earning More Than Their Managers](https://leetcode.com/problems/employees-earning-more-than-their-managers) |
+| ---- | ------------------------------------------------------------ |
+|      |                                                              |
+
+```
+select
+    e1.name as Employee
+from Employee as e1 inner join Employee as e2 
+    on e1.managerId = e2.id
+where
+    e1.salary > e2.salary
+
+
+```
+
+
+
+| 1141 | [User Activity for the Past 30 Days I](https://leetcode.com/problems/user-activity-for-the-past-30-days-i) |
+| ---- | ------------------------------------------------------------ |
+|      |                                                              |
+
+Uso de dadta diff
+
+```
+select 
+    activity_date as day, 
+    count(distinct user_id) as active_users 
+from 
+    Activity
+where 
+    datediff('2019-07-27', activity_date) < 30
+group by 
+    activity_date
+
+```
+
+| 1084 | [Sales Analysis III](https://leetcode.com/problems/sales-analysis-iii) |
+| ---- | ------------------------------------------------------------ |
+|      |                                                              |
+
+
+
+
+
+```
+# Queremos somente produto que somente foram vendidos em um periodo
+# usamos group by para pelo max/min saber se: se estiver algum alem do periodo, quer dizer que foi vendido fora do periodo e entao nao entra
+# USO DE CAST para converter uma cnstatne em DATE
+SELECT 
+    s.product_id, product_name
+FROM Sales s LEFT JOIN Product p
+    ON s.product_id = p.product_id
+GROUP BY 
+    s.product_id
+HAVING MIN(sale_date) >= CAST('2019-01-01' AS DATE) AND
+       MAX(sale_date) <= CAST('2019-03-31' AS DATE)
+```
+
+| 596  | [Classes More Than 5 Students](https://leetcode.com/problems/classes-more-than-5-students) |
+| ---- | ------------------------------------------------------------ |
+|      |                                                              |
+
+```
+SELECT
+    class
+FROM Courses
+GROUP BY class
+HAVING COUNT(*) >= 5
+```
+
 
 
 ## Rnadom
