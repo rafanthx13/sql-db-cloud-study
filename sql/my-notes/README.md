@@ -7,7 +7,9 @@ Reunião de todas as minhas anotações
 Gerado em: https://rafanthx13.github.io/md-toc-generator/
 
 + [Ultra Review de SQL](#ultra-review-de-sql)
+  - [TOC - Index](#toc---index)
   - [Tasks](#tasks)
+    * [Comentários](#comentários)
     * [Quantitade de valores duplicados](#quantitade-de-valores-duplicados)
     * [Mediana](#mediana)
   - [Keyword in SQL](#keyword-in-sql)
@@ -20,7 +22,6 @@ Gerado em: https://rafanthx13.github.io/md-toc-generator/
     * [Number Functions](#number-functions)
     * [Date Functions](#date-functions)
     * [`ORDER BY`](#`order-by`)
-+ [lef join pois pode nao ter distance](#lef-join-pois-pode-nao-ter-distance)
     * [Regex](#regex)
     * [`USING`](#`using`)
     * [String Functions](#string-functions)
@@ -32,10 +33,8 @@ Gerado em: https://rafanthx13.github.io/md-toc-generator/
       + [Subquery as list_of_values](#subquery-as-list_of_values)
       + [Subquerie no FROM](#subquerie-no-from)
     * [CTE](#cte)
-+ [Exemplo de 2 CTE numa mesma query](#exemplo-de-2-cte-numa-mesma-query)
     * [Pivot Table](#pivot-table)
       + [Exemplo Simples](#exemplo-simples)
-+ [Pivot Table](#pivot-table)
       + [Pivot Reverse](#pivot-reverse)
       + [Outros Exemplos de pivot table](#outros-exemplos-de-pivot-table)
   - [Window Function](#window-function)
@@ -52,6 +51,15 @@ Gerado em: https://rafanthx13.github.io/md-toc-generator/
 ## Tasks
 
 Resolver certas demandas que pode aparecer
+
+### Comentários
+
+```
+Curto: use --
+Longo: use /* */ 
+```
+
+
 
 ### Quantitade de valores duplicados
 
@@ -84,7 +92,7 @@ where (
 SELECT *
 FROM cinema
 WHERE 
-    id % 2 <> 0 # want id impar/odd
+    id % 2 <> 0 -- want id impar/odd
     AND 
     description NOT LIKE '%boring%' # nao deve ter boring
 ORDER BY 
@@ -153,13 +161,13 @@ EX3
 ```SQL
 SELECT
 	CASE
-        # quando for o ultimo caso
+        -- quando for o ultimo caso
 		WHEN seat.id % 2 <> 0 AND seat.id = (SELECT COUNT(*) FROM seat) 
             THEN seat.id
-        # quando tiver numero par -1
+        -- quando tiver numero par -1
 		WHEN seat.id % 2 = 0 
             THEN seat.id - 1
-        # quando id impar + 1
+        -- quando id impar + 1
 		ELSE
 			seat.id + 1
 	END as id,
@@ -235,14 +243,14 @@ ORDER BY Name; -- é o mesmo que ORDER BY NAME ASC
 select 
     u.name, 
     ifnull(sum(r.distance), 0) as travelled_distance
-# lef join pois pode nao ter distance
+-- lef join pois pode nao ter distance
 from users u left join rides r
     on u.id = r.user_id
 group by 
     r.user_id
 order by 
-    # order by eh a ultima coisa a ser feita,
-    # por isso da pra fazer sobre o attr com alias
+    -- order by eh a ultima coisa a ser feita,
+    -- por isso da pra fazer sobre o attr com alias
     travelled_distance desc, u.name asc
 ```
 
@@ -502,7 +510,7 @@ WHERE temp_var > 20;
 + Pode-se usar CTE para chamadas recursivas
 
 ```sql
-# Exemplo de 2 CTE numa mesma query
+-- Exemplo de 2 CTE numa mesma query
 WITH 
     money_summed AS (
        SELECT 
@@ -579,7 +587,7 @@ Queremos fazer uma Pivot Table nessa tabela para juntar os `players`, ter o tota
 **CADA **
 
 ```sql
-# Pivot Table
+-- Pivot Table
 SELECT conference,
        SUM(CASE WHEN year = 'FR' THEN players ELSE NULL END) AS fr,
        SUM(CASE WHEN year = 'SO' THEN players ELSE NULL END) AS so,
@@ -636,10 +644,10 @@ Para que cada uma das colunas que representam os anos se torne um registro. Para
              AS number_of_earthquakes
       FROM tutorial.worldwide_earthquakes earthquakes
      CROSS JOIN (
-           SELECT year
-             FROM (VALUES (2000),(2001),(2002),(2003),(2004),(2005),(2006),
-                          (2007),(2008),(2009),(2010),(2011),(2012)) v(year)
-           ) years
+         SELECT year
+         FROM (VALUES (2000),(2001),(2002),(2003),(2004),(2005),(2006),
+               (2007),(2008),(2009),(2010),(2011),(2012)) v(year)
+     ) years
 ```
 
 |      | year | magnitude  | number_of_earthquakes |
