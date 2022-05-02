@@ -235,14 +235,4 @@ GROUP BY company_name
 
 
 
-```
-SELECT
-  company_name,  
-  SUM(action='EMAIL')AS Email,
-  SUM(action='PRINT' AND pagecount=1)AS Print1Pages,
-  SUM(action='PRINT' AND pagecount=2)AS Print2Pages,
-  SUM(action='PRINT' AND pagecount=3)AS Print3Pages
-FROM t
-GROUP BY company_name
-```
 

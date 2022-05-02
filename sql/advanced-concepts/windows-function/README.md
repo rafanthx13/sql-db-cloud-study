@@ -44,7 +44,7 @@ This is important because based off of this logical order, window functions are 
 
 
 
-## Artigo 2
+## Artigo 1
 
 https://towardsdatascience.com/5-window-function-examples-to-take-your-sql-skills-to-the-next-level-2b3306650bb6
 
@@ -99,11 +99,9 @@ ORDER BY city
 + Agente quer por no resultado da query o maior peso da cidade em relaçâo a cada paciente
 + Sem windos funcion você tem que usa CTE para pegar esses addos
 
-OutPut:
+**OutPut:**
 
  The output will give you the same number of rows and your final column will be a max weight by city. This means that if a city appears more than once, then the weight value will be duplicated. This duplication happens frequently with window functions since we are performing an aggregation without collapsing any rows in the table.
-
-
 
 | city | weight | maxwt_groupby |
 | ---- | ------ | ------------- |
@@ -126,25 +124,29 @@ OutPut:
 - [sum(X)](https://www.sqlite.org/lang_aggfunc.html#sumunc)
 - [total(X)](https://www.sqlite.org/lang_aggfunc.html#sumunc)
 
-## Artigo 3
+## Artigo 2
 
 https://www.analyticsvidhya.com/blog/2020/12/window-function-a-must-know-sql-concept/
 
-#### What are Window Functions in SQL?
+### What are Window Functions in SQL?
 
 **Window functions** perform calculations on a set of rows that are related together. But, unlike the aggregate functions, windowing functions do not collapse the result of the rows into a single value. Instead, all the rows maintain their original identity and the calculated result is returned for every row.
 
+
+
+### Clauselue Over
+
 The **OVER** clause signifies a window of rows over which a window function is applied. It can be used with aggregate functions, like we have used with the SUM function here, thereby turning it into a window function. Or, it can also be used with non-aggregate functions that are only used as window functions (we will learn more about them in the later sections).
 
-#### Clauselue Over
+
 
 Exemplo
 
 ![](https://cdn.analyticsvidhya.com/wp-content/uploads/2020/11/over-clause-sql.png)
 
-Observe que esse somatório é fácil de obter, é um SUM comun. **A windows fuinction permite usar as funçôes de agregação e aplicar em todas as rows ao invés de faer um redux**
+Observe que esse somatório é fácil de obter, é um SUM comun. **A windows fuinction permite usar as funçôes de agregação e aplicar em todas as rows ao invés de fazer um redux como no group by**
 
-#### Clausule Partition
+### Clausule Partition
 
 For example, to display the total salary per job category for all the rows we would have to modify our original SQL query as follows:
 
@@ -154,9 +156,11 @@ For example, to display the total salary per job category for all the rows we wo
 
 Nesse caso, vai pegar a somatoria para cada categoria. É um group by da agregaçâo 
 
-## Artigo 4
+## Artigo 3
 
-# **List of Window Functions**
+### List of Window Functions
+
+
 
 https://towardsdatascience.com/a-guide-to-advanced-sql-window-functions-f63f2642cbf9
 
