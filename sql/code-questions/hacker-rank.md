@@ -416,7 +416,7 @@ Para resolver isso temos que:
 select min(coins_needed) 
 from 
 	Wands as w1 
-join Wands_Property as p1 on (w1.code = p1.code) 				
+join Wands_Property as p1 on (w1.code = p1.code) 
 where 
 -- Aqui esta os parametros globais 
 -- w1 (sub) matn com w (global)
@@ -437,7 +437,7 @@ where
     select min(coins_needed) 
     from 
     	Wands as w1 
-    	join Wands_Property as p1 on (w1.code = p1.code) 		
+    	join Wands_Property as p1 on (w1.code = p1.code)
     where 
     	w1.power = w.power and p1.age = p.age) order by w.power desc, p.age desc
 ```
@@ -636,8 +636,8 @@ https://www.hackerrank.com/challenges/15-days-of-learning-sql/
 select 
 submission_date ,
 
-( SELECT COUNT(distinct hacker_id)  
- FROM Submissions s2  
+( SELECT COUNT(distinct hacker_id)
+ FROM Submissions s2
  WHERE s2.submission_date = s1.submission_date AND    (SELECT COUNT(distinct s3.submission_date) FROM      Submissions s3 WHERE s3.hacker_id = s2.hacker_id AND s3.submission_date < s1.submission_date) = dateDIFF(s1.submission_date , '2016-03-01')) ,
 
 (select hacker_id  from submissions s2 where s2.submission_date = s1.submission_date 

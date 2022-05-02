@@ -139,7 +139,7 @@ If column names of two tables are identical, we can use the USING clause instead
 
 ```sql
 SELECT T.employee_id
-FROM  
+FROM
   (SELECT * FROM Employees LEFT JOIN Salaries USING(employee_id)
    UNION 
    SELECT * FROM Employees RIGHT JOIN Salaries USING(employee_id))
@@ -226,7 +226,7 @@ from
 WHERE 
     t.transaction_id IS NULL
 group by
-    v.customer_id  
+    v.customer_id
 
 ```
 
@@ -329,7 +329,7 @@ having sum(amount) > 10000
 
 ### [ 1890 The Latest Login in 2020](https://leetcode.com/problems/the-latest-login-in-2020)       
 
-Quando usa MAX/MIN retorna o menor valor etambem todos os outros dados da linha, volta a maior data e tambem o uiser_id dessa maior data, por isos só dá pra ter um unico max/min                                                   
+Quando usa MAX/MIN retorna o menor valor etambem todos os outros dados da linha, volta a maior data e tambem o uiser_id dessa maior data, por isos só dá pra ter um unico max/min
 
 ```sql
 SELECT
@@ -786,7 +786,7 @@ If column names of two tables are identical, we can use the USING clause instead
 
 ```sql
 SELECT T.employee_id
-FROM  
+FROM
   -- Left _ righ = full outer join
   -- Using é quando duas tabelas tem o mesmo nome apra pk=fk
   (SELECT * FROM Employees LEFT JOIN Salaries USING(employee_id)

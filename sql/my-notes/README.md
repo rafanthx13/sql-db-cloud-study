@@ -1,10 +1,490 @@
 # Ultra Review de SQL
 
-Por todas as minhas anotações
+Reunião de todas as minhas anotações
+
+## TOC - Index
+
+Gerado em: https://rafanthx13.github.io/md-toc-generator/
+
++ [Ultra Review de SQL](#ultra-review-de-sql)
+  - [Tasks](#tasks)
+    * [Quantitade de valores duplicados](#quantitade-de-valores-duplicados)
+    * [Mediana](#mediana)
+  - [Keyword in SQL](#keyword-in-sql)
+    * [Apelido/alias/`AS`](#apelido/alias/`as`)
+    * [`MOD%` Par ou Impar](#`mod%`-par-ou-impar)
+    * [Comparar valor](#comparar-valor)
+    * [`CASE`](#`case`)
+    * [Null Functions](#null-functions)
+    * [`CAST`](#`cast`)
+    * [Number Functions](#number-functions)
+    * [Date Functions](#date-functions)
+    * [`ORDER BY`](#`order-by`)
++ [lef join pois pode nao ter distance](#lef-join-pois-pode-nao-ter-distance)
+    * [Regex](#regex)
+    * [`USING`](#`using`)
+    * [String Functions](#string-functions)
+    * [FULL PUTER JOIN NO MYSQL](#full-puter-join-no-mysql)
+  - [Conceitos Avançados](#conceitos-avançados)
+    * [Subquery](#subquery)
+      + [Correlated Subqueries](#correlated-subqueries)
+      + [SubQuery as Value](#subquery-as-value)
+      + [Subquery as list_of_values](#subquery-as-list_of_values)
+      + [Subquerie no FROM](#subquerie-no-from)
+    * [CTE](#cte)
++ [Exemplo de 2 CTE numa mesma query](#exemplo-de-2-cte-numa-mesma-query)
+    * [Pivot Table](#pivot-table)
+      + [Exemplo Simples](#exemplo-simples)
++ [Pivot Table](#pivot-table)
+      + [Pivot Reverse](#pivot-reverse)
+      + [Outros Exemplos de pivot table](#outros-exemplos-de-pivot-table)
+  - [Window Function](#window-function)
+    * [CheatSheet Resume](#cheatsheet-resume)
+  - [NULL BEHAVIOR](#null-behavior)
+    * [Excluindo um valor pode excluir inclusive NULL](#excluindo-um-valor-pode-excluir-inclusive-null)
+    * [Aggregation Behavior](#aggregation-behavior)
+    * [Ordering Behavior](#ordering-behavior)
+    * [Em condicional](#em-condicional)
+  - [Otimização](#otimização)
+    * [Usar `GROUP BY` ao invés de `DISTINCT`](#usar-`group-by`-ao-invés-de-`distinct`)
+    * [From Git - Query Optimization](#from-git---query-optimization)
+
+## Tasks
+
+Resolver certas demandas que pode aparecer
+
+### Quantitade de valores duplicados
+
+```sql
+SELECT COUNT(CITY) - COUNT(DISTINCT(CITY)) FROM STATION;
+-- Será > 0 se houver houver city iguais (ou seja, duplicadas)
+```
+
+### Mediana
+
+```sql
+Select round(S.LAT_N,4) mediam 
+from station S 
+where (
+    select count(Lat_N) from station where Lat_N < S.LAT_N 
+) = (
+    select count(Lat_N) from station where Lat_N > S.LAT_N
+)
+```
+
+## Keyword in SQL
+
+### Apelido/alias/`AS`
+
+É opcional colocar a KEYWORD `AS ` mas recomendável por favorecer leitura
+
+### `MOD%` Par ou Impar
+
+```sql
+SELECT *
+FROM cinema
+WHERE 
+    id % 2 <> 0 # want id impar/odd
+    AND 
+    description NOT LIKE '%boring%' # nao deve ter boring
+ORDER BY 
+    rating DESC;
+```
+
+### Comparar valor
+
+```
+<> = DIFERENTE | > = MENOS        | AND
+=  = IGUALDADE | >= = MENOR IGUAL | OR
+<  = MAIS      | <= MAIOR IGUAL   | NOT
+IN
+NOT IN
+IS NOT NULL
+IS NULL
+BETWEEN == betwen pode ser usada entre datas
+  - BETWEEN "2013-10-01" AND "2013-10-03"
+IF(GRADE < 8, NULL, NAME)
+```
+
+
+
+### `CASE`
+
+`CASE` .... N * () `WHEN` bool `THEN` value) `END` `AS ` `alias`. Usa-se `ELSE` também
+
+**Exemplos**:
+
+EX1
+
+```sql
+-- detectar tipo de triangulo 
+SELECT
+CASE
+    WHEN A + B <= C 
+    THEN "Not A Triangle"
+    
+    WHEN A = B AND B = C
+    THEN "Equilateral"
+    
+    WHEN A != B AND B != C AND A != C
+    THEN "Scalene"  ELSE  "Isosceles"
+       
+END
+from triangles;
+```
+
+EX2
+
+```sql
+SELECT 
+    id,
+    CASE 
+        WHEN p_id IS NULL 
+            THEN 'Root'
+        WHEN id IN (SELECT p_id FROM Tree) 
+            THEN 'Inner'
+        ELSE 'Leaf'
+    END AS type
+FROM Tree
+```
+
+EX3
+
+```SQL
+SELECT
+	CASE
+        # quando for o ultimo caso
+		WHEN seat.id % 2 <> 0 AND seat.id = (SELECT COUNT(*) FROM seat) 
+            THEN seat.id
+        # quando tiver numero par -1
+		WHEN seat.id % 2 = 0 
+            THEN seat.id - 1
+        # quando id impar + 1
+		ELSE
+			seat.id + 1
+	END as id,
+	student 
+FROM seat
+ORDER BY id
+```
+
+### Null Functions
+
+IFFNULL: Se for nulo, faz um relplace
+
+EX1
+
+```sql
+SELECT 
+    u.user_id AS buyer_id, 
+    join_date, 
+    IFNULL(COUNT(order_date), 0) AS orders_in_2019 
+FROM Users as u LEFT JOIN Orders as o
+    ON u.user_id = o.buyer_id
+        AND YEAR(order_date) = '2019'
+GROUP BY
+    u.user_id
+```
+
+### `CAST`
+
+Converter tipos. Em geral fazemos entre string e Date
+
+EX1
+
+```sql
+SELECT 
+    s.product_id, product_name
+FROM Sales s LEFT JOIN Product p
+    ON s.product_id = p.product_id
+GROUP BY 
+    s.product_id
+HAVING MIN(sale_date) >= CAST('2019-01-01' AS DATE) AND
+       MAX(sale_date) <= CAST('2019-03-31' AS DATE)
+```
+
+### Number Functions
+
+```
+ROUND(value, [decima_cases]) = Areddonda
+FLOOR(value) = Aredonda para o INT mais baixo
+```
+
+### Date Functions
+
+```
+YEAR(time_stamp) = 2020 
+
+where 
+    datediff('2019-07-27', activity_date) < 30
+```
+
+### `ORDER BY`
+
+**O default é ASC**
+
+```sql
+SELECT Name
+FROM Employee
+ORDER BY Name; -- é o mesmo que ORDER BY NAME ASC
+```
+
+**ORDER BY pode ter mais de um valor**
+
+```sql
+select 
+    u.name, 
+    ifnull(sum(r.distance), 0) as travelled_distance
+# lef join pois pode nao ter distance
+from users u left join rides r
+    on u.id = r.user_id
+group by 
+    r.user_id
+order by 
+    # order by eh a ultima coisa a ser feita,
+    # por isso da pra fazer sobre o attr com alias
+    travelled_distance desc, u.name asc
+```
+
+**Da pra ordenar por qualquer coisa**
+
+```sql
+SELECT Name
+FROM Students
+WHERE Marks > 75
+ORDER BY SUBSTR(Name, - 3), Id ASC;
+-- ordena pelos 3 ultimos caracters do nome
+-- perceba que SUBSTR é um split, que, se negativo, epga de tras pra fenrete como em python
+```
+
+**`ORDER BY 1 e GROUP BY 1`**
+
+Quando você ver isso, o número indica a coluna. 
+
+Ao invez de escrever
+
+```sql
+select author_id as id 
+from Views 
+where author_id = viewer_id
+group by author_id
+order by author_id;
+```
+
+Voce pode escrever assim
+
+```sql
+select author_id as id 
+from Views 
+where author_id = viewer_id
+group by 1
+order by 1;
+```
+
+**COMEÇA DE 1**
+
+### Regex
+
+```
+exemplos:
+REGEXP '^DIAB1| +DIAB1'
+```
+
+Uso de REGEX: Pode ser tanto RLIKE quanto REGEXP, SÃO A MESMA COISA
+
+
+**BUSCA OS NOMES DAS CIDADE QUE COMEÇAM COM VOGAL**
+
+```sql
+select city from station where city REGEXP '^[aeiou]';
+```
+
+**Termina com vogal**
+
+```sql
+select distinct(city) from station where city REGEXP '[aeiou]$';
+```
+
+**termina e começa com vogal**
+
+```sql
+select distinct(city) from station where city REGEXP '^[aeiou]+(.)+[aeiou]$';
+```
+
+**que comecenão comece com  vogal**
+
+```sql
+select distinct city from station where city NOT REGEXP '^[aeiou]';
+```
+
+**nao sei como mas esse caso é difernete do 'que comece e termine com vogal'**
+
+```sql
+SELECT DISTINCT City
+FROM Station
+WHERE REGEXP_LIKE(City, '^[^AEIOU].*[^aeiou]$');
+```
+
+### `USING`
+
+`USING` o `ON a.id = b.id` quando
+
+EX1
+
+```sql
+SELECT T.employee_id
+FROM
+  (SELECT * FROM Employees LEFT JOIN Salaries USING(employee_id)
+   UNION 
+   SELECT * FROM Employees RIGHT JOIN Salaries USING(employee_id))
+AS T
+WHERE T.salary IS NULL OR T.name IS NULL
+ORDER BY employee_id;
+```
+
+EX2
+
+```sql
+select
+    name as NAME,
+    sum(amount) as BALANCE
+from Users inner join Transactions USING(account)
+group by account
+having sum(amount) > 10000 
+```
+
+
+
+### String Functions 
+
+```sql
+-- REPLACE
+REPLACE (str, find, repl)
+
+-- REVERSE
+REVERSE('Hello') --returns olleH
+
+
+-- SLICE
+SUBSTRING ( string_expression, start, length )
+SELECT SUBSTRING('Hello', 1, 2) --returns 'He'
+SELECT SUBSTRING('Hello', 3, 3) --returns 'llo'
+SELECT LEFT('Hello',2) --return He
+SELECT RIGHT('Hello',2) --return lo
+
+-- MAISUCULO MINUSCUÇP
+SELECT UPPER('HelloWorld') --returns 'HELLOWORLD'
+SELECT LOWER('HelloWorld') --returns 'helloworld'
+
+-- CONCAT
+SELECT 'Hello' || 'World' || '!'; --returns HelloWorld!
+SELECT CONCAT('Hello', 'World', '!'); --returns 'HelloWorld!'
+GROUP_CONCAT(list_ov_values)
+ -- funciona em Group by
+
+-- REPLICATE (FOR ....)
+SELECT REPLICATE ('Hello',4) --returns 'HelloHelloHelloHello'
+
+```
+
+### FULL PUTER JOIN NO MYSQL
+
+O Mysql nao tem, entao agente implementa uisando `LEFT` e `RIGHT`
+
+```sql
+SELECT T.employee_id
+FROM
+  -- Left _ righ = full outer join
+  -- Using é quando duas tabelas tem o mesmo nome apra pk=fk
+  (SELECT * FROM Employees LEFT JOIN Salaries USING(employee_id)
+   UNION 
+   SELECT * FROM Employees RIGHT JOIN Salaries USING(employee_id))
+AS T
+WHERE T.salary IS NULL OR T.name IS NULL
+ORDER BY employee_id;
+```
 
 
 
 ## Conceitos Avançados
+
+### Subquery
+
+####  Correlated Subqueries
+
+Correlated (also known as Synchronized or Coordinated) Subqueries are nested queries that make references to the current row of their outer query:
+
+Lembra umpouco o for da progrmaaçâo. é você fazer **VÁRIOS SELECTS** vairando como parametro um valor que está de fora
+
+Exemplo:
+
+```sql
+SELECT EmployeeId
+ FROM Employee AS eOuter
+ WHERE Salary > (
+     SELECT AVG(Salary)
+     FROM Employee eInner
+     WHERE eInner.DepartmentId = eOuter.DepartmentId
+ )
+-- eOuter vem de fora
+```
+
+#### SubQuery as Value
+
+```sql
+Select 
+    Department.Name, 
+    emp1.Name, 
+    emp1.Salary 
+from 
+    Employee emp1 join Department 
+    on emp1.DepartmentId = Department.Id
+where 
+    emp1.Salary = (
+        Select Max(Salary) 
+        from Employee emp2 
+        where emp2.DepartmentId = emp1.DepartmentId
+    )
+```
+
+#### Subquery as list_of_values
+
+EX1
+
+```sql
+SELECT
+    -- seleciona o maior
+    MAX(salary) as SecondHighestSalary
+FROM Employee 
+    -- mas nao vai mostrar o 1 maior
+    -- Se hpuver só um elemento: nao mostra nada 'null'
+WHERE salary 
+    NOT IN ( SELECT MAX(salary) FROM Employee)
+```
+
+EX2
+
+```SQL
+SELECT name
+FROM salesPerson
+WHERE  sales_id NOT IN
+    (
+        SELECT o.sales_id
+        FROM orders o 
+        LEFT JOIN company c
+        ON o.com_id = c.com_id    
+        WHERE c.name = 'RED'
+    )
+```
+
+#### Subquerie no FROM
+
+Funciona como uma tabel atemporaraia
+
+```sql
+SELECT * FROM (SELECT city, temp_hi - temp_lo AS temp_var FROM weather) AS w
+WHERE temp_var > 20;
+```
 
 ### CTE
 
@@ -21,10 +501,8 @@ Por todas as minhas anotações
   + Otimizaçâo: Se você cham 2 vezes uma cte, se trocar de CTE para subquery,, teria que executar a meama query 2 vezes
 + Pode-se usar CTE para chamadas recursivas
 
-
-
-~~~sql
-# Exemplod e 2 CTE
+```sql
+# Exemplo de 2 CTE numa mesma query
 WITH 
     money_summed AS (
        SELECT 
@@ -50,10 +528,7 @@ SELECT
    money_available 
 FROM money_available_calculated # uso de CTE 2
 WHERE date = '2022-01-01' 
-
 ````
-
-~~~
 
 ### Pivot Table
 
@@ -129,8 +604,6 @@ SELECT conference,
 |  2   |      ACC       |     1563      | 607  | 341  | 356  | 259  |
 |  3   | Conference USA |     1495      | 519  | 324  | 351  | 301  |
 |  4   |    Big Ten     |     1466      | 636  | 314  | 284  | 232  |
-
-
 
 #### Pivot Reverse
 
@@ -247,8 +720,226 @@ FROM t
 GROUP BY company_name
 ```
 
+ex4
+
+```
+select id, 
+	sum(case when month = 'jan' then revenue else null end) as Jan_Revenue,
+	sum(case when month = 'feb' then revenue else null end) as Feb_Revenue,
+	sum(case when month = 'mar' then revenue else null end) as Mar_Revenue,
+	sum(case when month = 'apr' then revenue else null end) as Apr_Revenue,
+	sum(case when month = 'may' then revenue else null end) as May_Revenue,
+	sum(case when month = 'jun' then revenue else null end) as Jun_Revenue,
+	sum(case when month = 'jul' then revenue else null end) as Jul_Revenue,
+	sum(case when month = 'aug' then revenue else null end) as Aug_Revenue,
+	sum(case when month = 'sep' then revenue else null end) as Sep_Revenue,
+	sum(case when month = 'oct' then revenue else null end) as Oct_Revenue,
+	sum(case when month = 'nov' then revenue else null end) as Nov_Revenue,
+	sum(case when month = 'dec' then revenue else null end) as Dec_Revenue
+from department
+group by id
+order by id
+```
+
+
+
 ## Window Function
+
+### CheatSheet Resume
 
 ![](G:\Personal Projects\TECH-DEV-STUDIES\sql-db-cloud-study\sql\my-notes\imgs\img-01.png)
 
 **Window functions** perform calculations on a set of rows that are related together. But, unlike the aggregate functions, windowing functions do not collapse the result of the rows into a single value. Instead, all the rows maintain their original identity and the calculated result is returned for every row.
+
+## NULL BEHAVIOR
+
+https://github.com/shawlu95/Beyond-LeetCode-SQL/tree/master/Hacks/02_NULL_pathology
+
+Se vocÊ vai fazer conta, ou alguma verificaçâo numa coluna que tem valor NULL, é necessário saber como vai se comportar
+
+### Excluindo um valor pode excluir inclusive NULL
+
+Exemplo
+
+```sql
+SELECT name FROM balance WHERE name != "Alice";
+-- Não retorna valores null
+```
+
+Agora, se quisermos que alme de diferen de Alice retorne nULL, tem que colcoar
+
+```sql
+SELECT name FROM balance WHERE name != "Alice" OR name IS NULL;
+```
+
+### Aggregation Behavior
+
+NULL é ignorado em n *SUM()*, *MAX()*, *MIN()*, *AVG()*.
+
+**MAS** se tiver GORUP BY, ai nao sera
+
+```
+mysql> SELECT name, SUM(balance) FROM Balance GROUP BY name;
++-------+--------------+
+| name  | SUM(balance) |
++-------+--------------+
+| Alice |           10 |
+| Bob   |           15 |
+| NULL  |           20 |
+| Cindy |          100 |
+| Shaw  |         NULL |
++-------+--------------+
+5 rows in set (0.00 sec)
+```
+
+
+
+### Ordering Behavior
+
+Note that when in ASC order, NULL appears first. In DESC order, NULL appears last. Use *COALESCE()* if we want to place *NULL* at the end, while still have *ASC* order for the rest of the rows.
+
+```
+mysql> SELECT name, balance FROM Balance ORDER BY balance;
++-------+---------+
+| name  | balance |
++-------+---------+
+| Cindy |    NULL |
+| Shaw  |    NULL |
+| NULL  |    NULL |
+| Bob   |       5 |
+| Alice |      10 |
+| Bob   |      10 |
+| NULL  |      20 |
+| Cindy |     100 |
++-------+---------+
+8 rows in set (0.00 sec)
+
+mysql> SELECT name, balance FROM Balance ORDER BY COALESCE(balance, 1E9);
++-------+---------+
+| name  | balance |
++-------+---------+
+| Bob   |       5 |
+| Alice |      10 |
+| Bob   |      10 |
+| NULL  |      20 |
+| Cindy |     100 |
+| Cindy |    NULL |
+| Shaw  |    NULL |
+| NULL  |    NULL |
++-------+---------+
+8 rows in set (0.00 sec)
+```
+
+
+
+In a GROUP BY clause, ordering is applied by default. See the following example: without using ORDER BY name, the results are already ordered by name.
+
+```
+mysql> SELECT name, SUM(balance) AS sum_balance FROM Balance GROUP BY name;
++-------+-------------+
+| name  | sum_balance |
++-------+-------------+
+| Alice |          10 |
+| Bob   |          15 |
+| NULL  |          20 |
+| Cindy |         100 |
+| Shaw  |        NULL |
++-------+-------------+
+5 rows in set (0.00 sec)
+
+mysql> SELECT name, SUM(balance) AS sum_balance FROM Balance GROUP BY name ORDER BY sum_balance;
++-------+-------------+
+| name  | sum_balance |
++-------+-------------+
+| Shaw  |        NULL |
+| Alice |          10 |
+| Bob   |          15 |
+| NULL  |          20 |
+| Cindy |         100 |
++-------+-------------+
+5 rows in set (0.00 sec)
+```
+
+### Em condicional
+
+```
+True and NULL returns NULL
+True or NULL returns True
+False and NULL returns False
+False or NULL returns NULL
+NULL = 0 returns NULL
+NULL != 12 returns NULL
+NULL +3 returns NULL
+NULL || 'str' returns NULL
+NULL = NULL returns NULL
+NULL != NULL returns NULL
+```
+
+Use `IS NULL` ou `IS NOT NULL`
+
+## Otimização
+
+### Usar `GROUP BY` ao invés de `DISTINCT`
+
+**distinct ém uito custoso. uMA FORMA DE VOCÊ TIRAR DUPLICATAS DE FORMA OTIMIZADA É ATRAVEZ DO `GROUP BY`**
+
+**GROUP BY É MAIS RÁPIDO QUE DISTINCT**
+
+```sql
+SELECT
+    distinct author_id as id
+FROM views
+WHERE author_id = viewer_id
+ORDER BY author_id;
+```
+
+Outro solução mais rápida
+
+```sql
+select author_id as id 
+from Views 
+where author_id = viewer_id
+group by 1
+order by 1;
+```
+
+### From Git - Query Optimization
+
+https://github.com/shawlu95/Beyond-LeetCode-SQL
+
+![alt-text](https://github.com/shawlu95/Beyond-LeetCode-SQL/raw/master/assets/sql_order.png)
+
+* Place smaller table first when joining multiple tables
+* Largest table is the base table
+  - base table is placed on right hand side of equal sign (where clause)
+* Place most restrictive condition **last**:
+  - The condition in the WHERE clause of a statement that returns the fewest rows of data
+  - the most restrictive condition was listed last in the WHERE clause,
+* try to use indexed column
+
+```SQL
+FROM TABLE1,   -- Smallest table
+     TABLE2,   -- to
+     TABLE3    -- Largest table, also base table
+WHERE TABLE1.COLUMN = TABLE3.COLUMN    -- Join condition
+  AND TABLE2.COLUMN = TABLE3.COLUMN    -- Join condition
+[ AND CONDITION1 ]                     -- Filter condition
+[ AND CONDITION2 ]                     -- Filter condition
+```
+
+* Using the `like` operator and wildcards (flexible search)
+* Avoiding the `or` operator, use `in` operator
+  - data retrieval is measurably faster by replac- ing OR conditions with the IN predicate
+* Avoiding the `HAVING` clause
+  - try to frame the restriction earlier (`where` clause)
+  - try to keep `HAVING` clause simple (use constant, not function)
+* avoiding large sort operations
+  - it is best to schedule queries with large sorts as periodic batch processes during off-peak database usage so that the performance of most user processes is not affected.
+* Prefer stored procedure
+  - compiled and permanently stored in the database in an executable format.
+* Disabling indexes during batch loads
+  - When the batch load is complete, you should rebuild the indexes.
+  - reduction of fragmentation that is found in the index
+* cost-based optimization: check database server manual
+* Using view: keep the levels of code in your query as flat as possible and to test and tune the statements that make up your views
+
