@@ -227,6 +227,34 @@ where
     datediff('2019-07-27', activity_date) < 30
 ```
 
+link: 
+
+https://medium.com/@aakriti.sharma18/data-cleaning-with-sql-eaab6d29d007
+
+Parsing Dates
+If the date is written as a string we can surely convert it to date data type using CAST. But this only works when it is in an SQL identified format. But what if it is other formats like MM/DD/YYYY? We first need to convert it to a string in an acceptable format and then cast it. For example,
+
+(SUBSTR(date, 7, 4) || ‘-’ || LEFT(date, 2) || ‘-’ || SUBSTR(date, 4, 2))::date AS cleaned_date
+EXTRACT
+A lot of times we need to take into account a specific part of the date, like sales in this month, admissions in this year. In such cases, we extract information from the date column as :
+
+EXTRACT('year'   FROM cleaned_date) AS year,
+EXTRACT('month'  FROM cleaned_date) AS month,        
+EXTRACT('day'    FROM cleaned_date) AS day,        
+EXTRACT('hour'   FROM cleaned_date) AS hour,        
+EXTRACT('minute' FROM cleaned_date) AS minute,        EXTRACT('second' FROM cleaned_date) AS second,        EXTRACT('decade' FROM cleaned_date) AS decade,        
+EXTRACT('dow'    FROM cleaned_date) AS day_of_week
+NOW
+SQL provides a wide variety of functions to retrieve the current date, time, and timestamp. Fun fact: They can be printed without the FROM clause.
+
+SELECT CURRENT_DATE AS date,        
+CURRENT_TIME AS time,        
+CURRENT_TIMESTAMP AS timestamp,        
+LOCALTIME AS localtime,        
+LOCALTIMESTAMP AS localtimestamp,
+CURRENT_TIME AT TIME ZONE 'PST' AS time_pst,        
+NOW() AS now
+
 ### `ORDER BY`
 
 **O default é ASC**
